@@ -116,33 +116,35 @@ window.onload = function () {
 
     //#region Define the displayData() function
 
-    function displayData() {
-        // Here we empty the contents of the list element each time the display is updated
-        // If you didn't do this, you'd get duplicates listed each time a new note is added
+    function displayData()
+    {
+        // Delete old list elements
         while (list.firstChild) {
             list.removeChild(list.firstChild);
         }
 
-        // Open our object store and then get a cursor - which iterates through all the
-        // different data items in the store
+        // open object store
         let objectStore = db.transaction('notes_os').objectStore('notes_os');
-        objectStore.openCursor().onsuccess = function (e) {
-            // Get a reference to the cursor
+
+        objectStore.openCursor().onsuccess = function (e)
+        {
+            // and get a cursor, which iterates through the data items in the store
             let cursor = e.target.result;
 
-            // If there is still another data item to iterate through, keep running this code
-            if (cursor) {
-                // Create a list item, h3, and p to put each data item inside when displaying it
-                // structure the HTML fragment, and append it inside the list
+            // If there is still another data item to iterate through..
+            if (cursor)
+            {
+                // .. create an li, h3 and p to put each data item inside
                 const listItem = document.createElement('li');
                 const h3 = document.createElement('h3');
                 const para = document.createElement('p');
 
+                // and append them to the list
                 listItem.appendChild(h3);
                 listItem.appendChild(para);
                 list.appendChild(listItem);
 
-                // Put the data from the cursor inside the h3 and para
+                // then put the data from the cursor inside
                 h3.textContent = cursor.value.title;
                 para.textContent = cursor.value.body;
 
@@ -155,15 +157,17 @@ window.onload = function () {
                 listItem.appendChild(deleteBtn);
                 deleteBtn.textContent = 'Delete';
 
-                // Set an event handler so that when the button is clicked, the deleteItem()
-                // function is run
+                // Set an onclick event handler for the delete button
                 deleteBtn.onclick = deleteItem;
 
                 // Iterate to the next item in the cursor
                 cursor.continue();
-            } else {
-                // Again, if list item is empty, display a 'No notes stored' message
-                if (!list.firstChild) {
+            } else
+            {
+                // If the <ul> is empty.. 
+                if (!list.firstChild)
+                {
+                    // display a 'No notes stored' message
                     const listItem = document.createElement('li');
                     listItem.textContent = 'No notes stored.';
                     list.appendChild(listItem);
@@ -178,26 +182,29 @@ window.onload = function () {
 
     //#region Define the deleteItem() function
 
-    function deleteItem(e) {
-        // retrieve the name of the task we want to delete. We need
-        // to convert it to a number before trying it use it with IDB; IDB key
-        // values are type-sensitive.
+    // 'e' is the delete button and e.target.parentNode 
+    // is the list item (li) containing the button.
+    function deleteItem(e)
+    {
+        // get the id of the list element
         let noteId = Number(e.target.parentNode.getAttribute('data-note-id'));
 
-        // open a database transaction and delete the task, finding it using the id we retrieved above
+        // open a database transaction and delete the list element
         let transaction = db.transaction(['notes_os'], 'readwrite');
         let objectStore = transaction.objectStore('notes_os');
         let request = objectStore.delete(noteId);
 
         // report that the data item has been deleted
-        transaction.oncomplete = function () {
-            // delete the parent of the button
-            // which is the list item, so it is no longer displayed
+        transaction.oncomplete = function ()
+        {
+            // delete the list item, so it is no longer displayed
             e.target.parentNode.parentNode.removeChild(e.target.parentNode);
             console.log('Note ' + noteId + ' deleted.');
 
-            // Again, if list item is empty, display a 'No notes stored' message
-            if (!list.firstChild) {
+            // If the <ul> is empty.. 
+            if (!list.firstChild)
+            {
+                // display a 'No notes stored' message
                 let listItem = document.createElement('li');
                 listItem.textContent = 'No notes stored.';
                 list.appendChild(listItem);
